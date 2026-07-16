@@ -48,4 +48,20 @@ public class PessoaController : ControllerBase
             novaPessoa
         );
     }
+
+    [HttpDelete("{id}")]
+public IActionResult ExcluirPessoa(int id)
+{
+    var pessoa = pessoas.FirstOrDefault(p => p.Id == id);
+
+    if (pessoa == null)
+    {
+        return NotFound("Pessoa não encontrada.");
+    }
+
+    pessoas.Remove(pessoa);
+
+    return NoContent();
 }
+}
+
