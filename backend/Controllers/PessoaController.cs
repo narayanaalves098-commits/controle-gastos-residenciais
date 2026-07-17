@@ -88,5 +88,24 @@ public class PessoaController : ControllerBase
 
         return Ok(resumo);
     }
+
+    [HttpGet("resumo-geral")]
+    public IActionResult ResumoGeral()
+    {
+        var resumo = new ResumoGeralDto
+        {
+            TotalReceitas = _context.Transacoes
+                .Where(t => t.Tipo.ToLower() == "receita")
+                .Sum(t => t.Valor),
+
+            TotalDespesas = _context.Transacoes
+                .Where(t => t.Tipo.ToLower() == "despesa")
+                .Sum(t => t.Valor)
+        };
+
+        resumo.Saldo = resumo.TotalReceitas - resumo.TotalDespesas;
+
+        return Ok(resumo);
+    }
 }
 
