@@ -55,23 +55,39 @@ public class TransacaoController : ControllerBase
 
     }
 
-   [HttpGet]
-public IActionResult ListarTransacoes()
-{
-    var transacoes = _context.Transacoes
-        .Include(t => t.Pessoa)
-        .Select(t => new
-        {
-            t.Id,
-            t.Valor,
-            t.Tipo,
-            t.Data,
-            t.PessoaId,
-            PessoaNome = t.Pessoa != null ? t.Pessoa.Nome : null
-        })
-        .ToList();
+    [HttpGet]
+    public IActionResult ListarTransacoes()
+    {
+        var transacoes = _context.Transacoes
+            .Include(t => t.Pessoa)
+            .Select(t => new
+            {
+                t.Id,
+                t.Valor,
+                t.Tipo,
+                t.Data,
+                t.PessoaId,
+                PessoaNome = t.Pessoa != null ? t.Pessoa.Nome : null
+            })
+            .ToList();
 
-    return Ok(transacoes);
-}
+        return Ok(transacoes);
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult ExcluirTransacao(int id)
+    {
+        var transacao = _context.Transacoes.Find(id);
+
+        if (transacao == null)
+        {
+            return NotFound("Transação não encontrada.");
+        }
+
+        _context.Transacoes.Remove(transacao);
+        _context.SaveChanges();
+
+        return NoContent();
+    }
 
 }
