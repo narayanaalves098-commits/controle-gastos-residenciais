@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using backend.Data;
 using backend.Dtos;
 using backend.Models;
+
 
 namespace backend.Controllers;
 
@@ -50,5 +52,26 @@ public class TransacaoController : ControllerBase
             transacao.Data,
             transacao.PessoaId
         });
+
     }
+
+   [HttpGet]
+public IActionResult ListarTransacoes()
+{
+    var transacoes = _context.Transacoes
+        .Include(t => t.Pessoa)
+        .Select(t => new
+        {
+            t.Id,
+            t.Valor,
+            t.Tipo,
+            t.Data,
+            t.PessoaId,
+            PessoaNome = t.Pessoa != null ? t.Pessoa.Nome : null
+        })
+        .ToList();
+
+    return Ok(transacoes);
+}
+
 }
