@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using backend.Models;
 using backend.Dtos;
+using backend.Data;
 
 namespace backend.Controllers;
 
@@ -8,25 +9,18 @@ namespace backend.Controllers;
 [Route("api/[controller]")]
 public class PessoaController : ControllerBase
 {
-    private static readonly List<Pessoa> pessoas = new()
+    private readonly AppDbContext _context;
+
+    public PessoaController(AppDbContext context)
     {
-        new Pessoa
-        {
-            Id = 1,
-            Nome = "Narayana",
-            Idade = 24
-        },
-        new Pessoa
-        {
-            Id = 2,
-            Nome = "João",
-            Idade = 17
-        }
-    };
+        _context = context;
+    }
 
     [HttpGet]
     public IActionResult ListarPessoas()
     {
+        var pessoas = _context.Pessoas.ToList();
+
         return Ok(pessoas);
     }
 
@@ -35,12 +29,12 @@ public class PessoaController : ControllerBase
     {
         var novaPessoa = new Pessoa
         {
-            Id = pessoas.Count + 1,
             Nome = dados.Nome,
             Idade = dados.Idade
         };
 
-        pessoas.Add(novaPessoa);
+        _context.Pessoas.Add(novaPessoa);
+        _context.SaveChanges();
 
         return CreatedAtAction(
             nameof(ListarPessoas),
@@ -50,18 +44,19 @@ public class PessoaController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-public IActionResult ExcluirPessoa(int id)
-{
-    var pessoa = pessoas.FirstOrDefault(p => p.Id == id);
-
-    if (pessoa == null)
+    public IActionResult ExcluirPessoa(int id)
     {
-        return NotFound("Pessoa não encontrada.");
+        var pessoa = _context.Pessoas.Find(id);
+
+        if (pessoa == null)
+        {
+            return NotFound("Pessoa não encontrada.");
+        }
+
+        _context.Pessoas.Remove(pessoa);
+        _context.SaveChanges();
+
+        return NoContent();
     }
-
-    pessoas.Remove(pessoa);
-
-    return NoContent();
-}
 }
 
