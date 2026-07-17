@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using backend.Models;
 using backend.Dtos;
 using backend.Data;
@@ -57,6 +58,35 @@ public class PessoaController : ControllerBase
         _context.SaveChanges();
 
         return NoContent();
+    }
+
+    [HttpGet("{id}/resumo")]
+    public IActionResult ResumoPessoa(int id)
+    {
+        var pessoa = _context.Pessoas
+            .Include(p => p.Transacoes)
+            .FirstOrDefault(p => p.Id == id);
+
+        if (pessoa == null)
+        {
+            return NotFound("Pessoa não encontrada.");
+        }
+
+        var resumo = new ResumoPessoaDto
+        {
+            Nome = pessoa.Nome,
+            TotalReceitas = pessoa.Transacoes
+                .Where(t => t.Tipo.ToLower() == "receita")
+                .Sum(t => t.Valor),
+
+            TotalDespesas = pessoa.Transacoes
+                .Where(t => t.Tipo.ToLower() == "despesa")
+                .Sum(t => t.Valor)
+        };
+
+        resumo.Saldo = resumo.TotalReceitas - resumo.TotalDespesas;
+
+        return Ok(resumo);
     }
 }
 
