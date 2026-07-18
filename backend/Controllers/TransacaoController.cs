@@ -28,6 +28,17 @@ public class TransacaoController : ControllerBase
             return NotFound("Pessoa não encontrada.");
         }
 
+        if (dados.Valor <= 0)
+        {
+            return BadRequest("O valor deve ser maior que zero.");
+        }
+
+        if (dados.Tipo.ToLower() != "receita" &&
+    dados.Tipo.ToLower() != "despesa")
+        {
+            return BadRequest("O tipo deve ser Receita ou Despesa.");
+        }
+
         if (pessoa.Idade < 18 && dados.Tipo.ToLower() == "receita")
         {
             return BadRequest("Menores de 18 anos só podem cadastrar despesas.");
