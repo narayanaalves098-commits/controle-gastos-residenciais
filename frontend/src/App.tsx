@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import type { Pessoa } from "./types/Pessoa";
-import { listarPessoas, cadastrarPessoa } from "./services/pessoaService";
+import {
+  listarPessoas,
+  cadastrarPessoa,
+  excluirPessoa,
+} from "./services/pessoaService";
+
 
 function App() {
   const [pessoas, setPessoas] = useState<Pessoa[]>([]);
@@ -24,6 +29,13 @@ function App() {
 
   setNome("");
   setIdade(0);
+}
+
+async function removerPessoa(id: number) {
+  await excluirPessoa(id);
+
+  const dados = await listarPessoas();
+  setPessoas(dados);
 }
 
   return (
@@ -55,12 +67,19 @@ function App() {
       <ul>
         {pessoas.map((pessoa) => (
           <li key={pessoa.id}>
-            {pessoa.nome} - {pessoa.idade} anos
-          </li>
+  {pessoa.nome} - {pessoa.idade} anos
+
+  <button onClick={() => removerPessoa(pessoa.id)}>
+    Excluir
+  </button>
+</li>
         ))}
       </ul>
     </div>
   );
+  
 }
+
+
 
 export default App;

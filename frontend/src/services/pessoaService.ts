@@ -18,3 +18,7 @@ export async function cadastrarPessoa(
 
   return resposta.data;
 }
+
+export async function excluirPessoa(id: number): Promise<void> {
+  await axios.delete(`${API_URL}/pessoa/${id}`);
+}
