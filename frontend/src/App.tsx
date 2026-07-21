@@ -9,6 +9,7 @@ import type { Transacao } from "./types/Transacao";
 import {
   listarTransacoes,
   cadastrarTransacao,
+  excluirTransacao,
 } from "./services/transacaoService";
 
 function App() {
@@ -17,9 +18,9 @@ function App() {
   const [idade, setIdade] = useState<number | "">("");
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [valor, setValor] = useState<number | "">("");
-const [tipo, setTipo] = useState("Despesa");
-const [data, setData] = useState("");
-const [pessoaId, setPessoaId] = useState(0);
+  const [tipo, setTipo] = useState("Despesa");
+  const [data, setData] = useState("");
+  const [pessoaId, setPessoaId] = useState(0);
 
   useEffect(() => {
     async function carregarPessoas() {
@@ -27,53 +28,59 @@ const [pessoaId, setPessoaId] = useState(0);
       setPessoas(dados);
     }
     async function carregarTransacoes() {
-  const dados = await listarTransacoes();
-  setTransacoes(dados);
-}
+      const dados = await listarTransacoes();
+      setTransacoes(dados);
+    }
 
     carregarPessoas();
     carregarTransacoes();
-
   }, []);
 
   async function salvarPessoa() {
-  if (nome.trim() === "" || idade === "") {
-    alert("Preencha o nome e a idade.");
-    return;
+    if (nome.trim() === "" || idade === "") {
+      alert("Preencha o nome e a idade.");
+      return;
+    }
+
+    await cadastrarPessoa(nome, idade);
+
+    const dados = await listarPessoas();
+    setPessoas(dados);
+
+    setNome("");
+    setIdade("");
   }
 
-  await cadastrarPessoa(nome, idade);
+  async function salvarTransacao() {
+    if (valor === "" || valor <= 0 || data === "" || pessoaId === 0) {
+      alert("Preencha todos os dados da transação.");
+      return;
+    }
 
-  const dados = await listarPessoas();
-  setPessoas(dados);
+    await cadastrarTransacao(valor, tipo, data, pessoaId);
 
-  setNome("");
-  setIdade("");
-}
+    const dados = await listarTransacoes();
+    setTransacoes(dados);
 
-async function salvarTransacao() {
-  if (valor === "" || valor <= 0 || data === "" || pessoaId === 0) {
-  alert("Preencha todos os dados da transação.");
-  return;
-}
+    setValor("");
+    setTipo("Despesa");
+    setData("");
+    setPessoaId(0);
+  }
 
-  await cadastrarTransacao(valor, tipo, data, pessoaId);
+  async function removerTransacao(id: number) {
+    await excluirTransacao(id);
 
-  const dados = await listarTransacoes();
-  setTransacoes(dados);
+    const dados = await listarTransacoes();
+    setTransacoes(dados);
+  }
 
-  setValor("");
-  setTipo("Despesa");
-  setData("");
-  setPessoaId(0);
-}
+  async function removerPessoa(id: number) {
+    await excluirPessoa(id);
 
-async function removerPessoa(id: number) {
-  await excluirPessoa(id);
-
-  const dados = await listarPessoas();
-  setPessoas(dados);
-}
+    const dados = await listarPessoas();
+    setPessoas(dados);
+  }
 
   return (
     <div>
@@ -81,91 +88,86 @@ async function removerPessoa(id: number) {
 
       <h2>Cadastrar Pessoa</h2>
 
-<input
-  type="text"
-  placeholder="Nome"
-  value={nome}
-  onChange={(e) => setNome(e.target.value)}
-/>
+      <input
+        type="text"
+        placeholder="Nome"
+        value={nome}
+        onChange={(e) => setNome(e.target.value)}
+      />
 
-<input
-  type="number"
-  placeholder="Idade"
-  value={idade}
-  onChange={(e) =>
-    setIdade(e.target.value === "" ? "" : Number(e.target.value))
-  }
-/>
+      <input
+        type="number"
+        placeholder="Idade"
+        value={idade}
+        onChange={(e) =>
+          setIdade(e.target.value === "" ? "" : Number(e.target.value))
+        }
+      />
 
-<button onClick={salvarPessoa}>
-  Cadastrar
-</button>
+      <button onClick={salvarPessoa}>Cadastrar</button>
 
       <h2>Lista de Pessoas</h2>
 
       <ul>
         {pessoas.map((pessoa) => (
           <li key={pessoa.id}>
-  {pessoa.nome} - {pessoa.idade} anos
-
-  <button onClick={() => removerPessoa(pessoa.id)}>
-    Excluir
-  </button>
-</li>
+            {pessoa.nome} - {pessoa.idade} anos
+            <button onClick={() => removerPessoa(pessoa.id)}>Excluir</button>
+          </li>
         ))}
       </ul>
 
       <h2>Cadastrar Transação</h2>
 
-<input
-  type="number"
-  placeholder="Valor"
-  value={valor}
-  onChange={(e) =>
-    setValor(e.target.value === "" ? "" : Number(e.target.value))
-  }
-/>
+      <input
+        type="number"
+        placeholder="Valor"
+        value={valor}
+        onChange={(e) =>
+          setValor(e.target.value === "" ? "" : Number(e.target.value))
+        }
+      />
 
-<select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-  <option value="Despesa">Despesa</option>
-  <option value="Receita">Receita</option>
-</select>
+      <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
+        <option value="Despesa">Despesa</option>
+        <option value="Receita">Receita</option>
+      </select>
 
-<input
-  type="date"
-  value={data}
-  onChange={(e) => setData(e.target.value)}
-/>
+      <input
+        type="date"
+        value={data}
+        onChange={(e) => setData(e.target.value)}
+      />
 
-<select
-  value={pessoaId}
-  onChange={(e) => setPessoaId(Number(e.target.value))}
->
-  <option value={0}>Selecione uma pessoa</option>
+      <select
+        value={pessoaId}
+        onChange={(e) => setPessoaId(Number(e.target.value))}
+      >
+        <option value={0}>Selecione uma pessoa</option>
 
-  {pessoas.map((pessoa) => (
-    <option key={pessoa.id} value={pessoa.id}>
-      {pessoa.nome}
-    </option>
-  ))}
-</select>
+        {pessoas.map((pessoa) => (
+          <option key={pessoa.id} value={pessoa.id}>
+            {pessoa.nome}
+          </option>
+        ))}
+      </select>
 
-<button onClick={salvarTransacao}>
-  Cadastrar Transação
-</button>
+      <button onClick={salvarTransacao}>Cadastrar Transação</button>
 
       <h2>Lista de Transações</h2>
 
-<ul>
-  {transacoes.map((transacao) => (
-    <li key={transacao.id}>
-      {transacao.pessoaNome} - {transacao.tipo} - R$ {transacao.valor}
-    </li>
-  ))}
-</ul>
+      <ul>
+        {transacoes.map((transacao) => (
+          <li key={transacao.id}>
+            {transacao.pessoaNome} - {transacao.tipo} - R$ {transacao.valor}
+            <button onClick={() => removerTransacao(transacao.id)}>
+              Excluir
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-
 }
 
 export default App;

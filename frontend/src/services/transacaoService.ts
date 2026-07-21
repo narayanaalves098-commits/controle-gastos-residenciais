@@ -22,3 +22,7 @@ export async function cadastrarTransacao(
 
   return resposta.data;
 }
+
+export async function excluirTransacao(id: number): Promise<void> {
+  await axios.delete(`${API_URL}/transacao/${id}`);
+}
