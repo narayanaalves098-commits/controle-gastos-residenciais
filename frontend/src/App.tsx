@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import type { Pessoa } from "./types/Pessoa";
+import type { ResumoGeral } from "./types/ResumoGeral";
+import type { ResumoPessoa } from "./types/ResumoPessoa";
 import {
   listarPessoas,
   cadastrarPessoa,
   excluirPessoa,
+  buscarResumoGeral,
+  buscarResumoPessoa,
 } from "./services/pessoaService";
 import type { Transacao } from "./types/Transacao";
 import {
@@ -21,21 +25,42 @@ function App() {
   const [tipo, setTipo] = useState("Despesa");
   const [data, setData] = useState("");
   const [pessoaId, setPessoaId] = useState(0);
+  const [resumoGeral, setResumoGeral] = useState<ResumoGeral | null>(null);
+  const [resumosPessoas, setResumosPessoas] = useState<ResumoPessoa[]>([]);
 
   useEffect(() => {
     async function carregarPessoas() {
       const dados = await listarPessoas();
       setPessoas(dados);
+      await atualizarResumosPessoas(dados);
     }
     async function carregarTransacoes() {
       const dados = await listarTransacoes();
       setTransacoes(dados);
     }
 
+    async function carregarResumoGeral() {
+      const dados = await buscarResumoGeral();
+      setResumoGeral(dados);
+    }
+
     carregarPessoas();
     carregarTransacoes();
+    carregarResumoGeral();
   }, []);
 
+  async function atualizarResumoGeral() {
+    const dados = await buscarResumoGeral();
+    setResumoGeral(dados);
+  }
+
+  async function atualizarResumosPessoas(listaPessoas: Pessoa[]) {
+    const resumos = await Promise.all(
+      listaPessoas.map((pessoa) => buscarResumoPessoa(pessoa.id)),
+    );
+
+    setResumosPessoas(resumos);
+  }
   async function salvarPessoa() {
     if (nome.trim() === "" || idade === "") {
       alert("Preencha o nome e a idade.");
@@ -46,6 +71,8 @@ function App() {
 
     const dados = await listarPessoas();
     setPessoas(dados);
+    await atualizarResumosPessoas(dados);
+    await atualizarResumoGeral();
 
     setNome("");
     setIdade("");
@@ -59,8 +86,14 @@ function App() {
 
     await cadastrarTransacao(valor, tipo, data, pessoaId);
 
-    const dados = await listarTransacoes();
-    setTransacoes(dados);
+    const transacoesAtualizadas = await listarTransacoes();
+    setTransacoes(transacoesAtualizadas);
+
+    const pessoasAtualizadas = await listarPessoas();
+    setPessoas(pessoasAtualizadas);
+
+    await atualizarResumosPessoas(pessoasAtualizadas);
+    await atualizarResumoGeral();
 
     setValor("");
     setTipo("Despesa");
@@ -71,8 +104,14 @@ function App() {
   async function removerTransacao(id: number) {
     await excluirTransacao(id);
 
-    const dados = await listarTransacoes();
-    setTransacoes(dados);
+    const transacoesAtualizadas = await listarTransacoes();
+    setTransacoes(transacoesAtualizadas);
+
+    const pessoasAtualizadas = await listarPessoas();
+    setPessoas(pessoasAtualizadas);
+
+    await atualizarResumosPessoas(pessoasAtualizadas);
+    await atualizarResumoGeral();
   }
 
   async function removerPessoa(id: number) {
@@ -80,11 +119,23 @@ function App() {
 
     const dados = await listarPessoas();
     setPessoas(dados);
+    await atualizarResumosPessoas(dados);
+    await atualizarResumoGeral();
   }
 
   return (
     <div>
       <h1>Controle de Gastos Residenciais</h1>
+
+      <h2>Resumo Geral</h2>
+
+      {resumoGeral && (
+        <div>
+          <p>Total de receitas: R$ {resumoGeral.totalReceitas}</p>
+          <p>Total de despesas: R$ {resumoGeral.totalDespesas}</p>
+          <p>Saldo: R$ {resumoGeral.saldo}</p>
+        </div>
+      )}
 
       <h2>Cadastrar Pessoa</h2>
 
@@ -109,13 +160,30 @@ function App() {
       <h2>Lista de Pessoas</h2>
 
       <ul>
-        {pessoas.map((pessoa) => (
-          <li key={pessoa.id}>
-            {pessoa.nome} - {pessoa.idade} anos
-            <button onClick={() => removerPessoa(pessoa.id)}>Excluir</button>
-          </li>
-        ))}
-      </ul>
+  {pessoas.map((pessoa) => {
+   const resumo = resumosPessoas.find(
+  (item) => item.nome === pessoa.nome,
+);
+
+    return (
+      <li key={pessoa.id}>
+        <p>
+          {pessoa.nome} - {pessoa.idade} anos
+        </p>
+
+        {resumo && (
+          <div>
+            <p>Receitas: R$ {resumo.totalReceitas}</p>
+            <p>Despesas: R$ {resumo.totalDespesas}</p>
+            <p>Saldo: R$ {resumo.saldo}</p>
+          </div>
+        )}
+
+        <button onClick={() => removerPessoa(pessoa.id)}>Excluir</button>
+      </li>
+    );
+  })}
+</ul>
 
       <h2>Cadastrar Transação</h2>
 
