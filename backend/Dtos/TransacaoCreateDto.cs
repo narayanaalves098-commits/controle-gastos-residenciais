@@ -8,5 +8,7 @@ public class TransacaoCreateDto
 
     public DateTime Data { get; set; }
 
+    public string Descricao { get; set; } = string.Empty;
+
     public int PessoaId { get; set; }
 }

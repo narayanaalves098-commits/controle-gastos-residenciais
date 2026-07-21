@@ -10,6 +10,8 @@ public class Transacao
 
     public DateTime Data { get; set; }
 
+    public string Descricao { get; set; } = string.Empty;
+
     public int PessoaId { get; set; }
 
     public Pessoa? Pessoa { get; set; }

@@ -17,6 +17,7 @@ public class PessoaController : ControllerBase
         _context = context;
     }
 
+    // Retorna todas as pessoas cadastradas.
     [HttpGet]
     public IActionResult ListarPessoas()
     {
@@ -25,6 +26,7 @@ public class PessoaController : ControllerBase
         return Ok(pessoas);
     }
 
+    // Cadastra uma nova pessoa.
     [HttpPost]
     public IActionResult CriarPessoa(PessoaCreateDto dados)
     {
@@ -43,7 +45,8 @@ public class PessoaController : ControllerBase
             novaPessoa
         );
     }
-
+    
+    // Remove uma pessoa e todas as suas transações.
     [HttpDelete("{id}")]
     public IActionResult ExcluirPessoa(int id)
     {
