@@ -54,7 +54,9 @@ Sistema web desenvolvido para gerenciamento de gastos residenciais, permitindo o
 
 ## 🗄️ Banco de Dados
 
-O projeto utiliza **SQLite** juntamente com o **Entity Framework Core** para persistência dos dados.
+O projeto utiliza SQLite juntamente com o Entity Framework Core para persistência dos dados.
+
+O arquivo do banco de dados não é versionado no repositório. Para criá-lo localmente, execute o comando dotnet ef database update antes de iniciar a aplicação.
 
 ---
 
