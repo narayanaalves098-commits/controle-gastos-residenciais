@@ -27,6 +27,7 @@ function App() {
   const [pessoaId, setPessoaId] = useState(0);
   const [resumoGeral, setResumoGeral] = useState<ResumoGeral | null>(null);
   const [resumosPessoas, setResumosPessoas] = useState<ResumoPessoa[]>([]);
+  const [descricao, setDescricao] = useState("");
 
   useEffect(() => {
     async function carregarPessoas() {
@@ -79,12 +80,18 @@ function App() {
   }
 
   async function salvarTransacao() {
-    if (valor === "" || valor <= 0 || data === "" || pessoaId === 0) {
+    if (
+      valor === "" ||
+      valor <= 0 ||
+      descricao.trim() === "" ||
+      data === "" ||
+      pessoaId === 0
+    ) {
       alert("Preencha todos os dados da transação.");
       return;
     }
 
-    await cadastrarTransacao(valor, tipo, data, pessoaId);
+    await cadastrarTransacao(valor, tipo, data, descricao, pessoaId);
 
     const transacoesAtualizadas = await listarTransacoes();
     setTransacoes(transacoesAtualizadas);
@@ -96,6 +103,7 @@ function App() {
     await atualizarResumoGeral();
 
     setValor("");
+    setDescricao("");
     setTipo("Despesa");
     setData("");
     setPessoaId(0);
@@ -160,30 +168,30 @@ function App() {
       <h2>Lista de Pessoas</h2>
 
       <ul>
-  {pessoas.map((pessoa) => {
-   const resumo = resumosPessoas.find(
-  (item) => item.nome === pessoa.nome,
-);
+        {pessoas.map((pessoa) => {
+          const resumo = resumosPessoas.find(
+            (item) => item.nome === pessoa.nome,
+          );
 
-    return (
-      <li key={pessoa.id}>
-        <p>
-          {pessoa.nome} - {pessoa.idade} anos
-        </p>
+          return (
+            <li key={pessoa.id}>
+              <p>
+                {pessoa.nome} - {pessoa.idade} anos
+              </p>
 
-        {resumo && (
-          <div>
-            <p>Receitas: R$ {resumo.totalReceitas}</p>
-            <p>Despesas: R$ {resumo.totalDespesas}</p>
-            <p>Saldo: R$ {resumo.saldo}</p>
-          </div>
-        )}
+              {resumo && (
+                <div>
+                  <p>Receitas: R$ {resumo.totalReceitas}</p>
+                  <p>Despesas: R$ {resumo.totalDespesas}</p>
+                  <p>Saldo: R$ {resumo.saldo}</p>
+                </div>
+              )}
 
-        <button onClick={() => removerPessoa(pessoa.id)}>Excluir</button>
-      </li>
-    );
-  })}
-</ul>
+              <button onClick={() => removerPessoa(pessoa.id)}>Excluir</button>
+            </li>
+          );
+        })}
+      </ul>
 
       <h2>Cadastrar Transação</h2>
 
@@ -194,6 +202,13 @@ function App() {
         onChange={(e) =>
           setValor(e.target.value === "" ? "" : Number(e.target.value))
         }
+      />
+
+      <input
+        type="text"
+        placeholder="Descrição"
+        value={descricao}
+        onChange={(e) => setDescricao(e.target.value)}
       />
 
       <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
@@ -227,7 +242,14 @@ function App() {
       <ul>
         {transacoes.map((transacao) => (
           <li key={transacao.id}>
-            {transacao.pessoaNome} - {transacao.tipo} - R$ {transacao.valor}
+            <p>
+              {transacao.pessoaNome} - {transacao.tipo}
+            </p>
+
+            {transacao.descricao && <p>Descrição: {transacao.descricao}</p>}
+
+            <p>Valor: R$ {transacao.valor}</p>
+
             <button onClick={() => removerTransacao(transacao.id)}>
               Excluir
             </button>

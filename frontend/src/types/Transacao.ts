@@ -3,6 +3,7 @@ export interface Transacao {
   valor: number;
   tipo: string;
   data: string;
+  descricao: string;
   pessoaId: number;
   pessoaNome: string;
 }
