@@ -30,6 +30,7 @@ function App() {
   const [resumosPessoas, setResumosPessoas] = useState<ResumoPessoa[]>([]);
   const [descricao, setDescricao] = useState("");
 
+  // Carrega os dados iniciais da aplicação ao abrir a página.
   useEffect(() => {
     async function carregarPessoas() {
       const dados = await listarPessoas();
@@ -51,11 +52,13 @@ function App() {
     carregarResumoGeral();
   }, []);
 
+  // Atualiza o resumo financeiro geral.
   async function atualizarResumoGeral() {
     const dados = await buscarResumoGeral();
     setResumoGeral(dados);
   }
 
+  // Atualiza o resumo financeiro de cada pessoa cadastrada.
   async function atualizarResumosPessoas(listaPessoas: Pessoa[]) {
     const resumos = await Promise.all(
       listaPessoas.map((pessoa) => buscarResumoPessoa(pessoa.id)),
@@ -63,6 +66,8 @@ function App() {
 
     setResumosPessoas(resumos);
   }
+
+  // Realiza o cadastro de uma nova pessoa.
   async function salvarPessoa() {
     if (nome.trim() === "" || idade === "") {
       alert("Preencha o nome e a idade.");
@@ -80,6 +85,7 @@ function App() {
     setIdade("");
   }
 
+  // Realiza o cadastro de uma nova transação e atualiza os dados da tela.
   async function salvarTransacao() {
     if (
       valor === "" ||
@@ -91,35 +97,34 @@ function App() {
       alert("Preencha todos os dados da transação.");
       return;
     }
-  
-      try {
-    await cadastrarTransacao(valor, tipo, data, descricao, pessoaId);
 
-    const transacoesAtualizadas = await listarTransacoes();
-    setTransacoes(transacoesAtualizadas);
+    try {
+      await cadastrarTransacao(valor, tipo, data, descricao, pessoaId);
 
-    const pessoasAtualizadas = await listarPessoas();
-    setPessoas(pessoasAtualizadas);
+      const transacoesAtualizadas = await listarTransacoes();
+      setTransacoes(transacoesAtualizadas);
 
-    await atualizarResumosPessoas(pessoasAtualizadas);
-    await atualizarResumoGeral();
+      const pessoasAtualizadas = await listarPessoas();
+      setPessoas(pessoasAtualizadas);
 
-    setValor("");
-    setDescricao("");
-    setTipo("Despesa");
-    setData("");
-    setPessoaId(0);
+      await atualizarResumosPessoas(pessoasAtualizadas);
+      await atualizarResumoGeral();
 
-    alert("Transação cadastrada com sucesso!");
-  } catch (erro) {
-  const error = erro as AxiosError<string>;
+      setValor("");
+      setDescricao("");
+      setTipo("Despesa");
+      setData("");
+      setPessoaId(0);
 
-  alert(
-    error.response?.data || "Erro ao cadastrar a transação."
-  );
-}
-}
+      alert("Transação cadastrada com sucesso!");
+    } catch (erro) {
+      const error = erro as AxiosError<string>;
 
+      alert(error.response?.data || "Erro ao cadastrar a transação.");
+    }
+  }
+
+  // Remove uma transação cadastrada.
   async function removerTransacao(id: number) {
     await excluirTransacao(id);
 
@@ -133,6 +138,7 @@ function App() {
     await atualizarResumoGeral();
   }
 
+  // Remove uma pessoa e suas transações vinculadas.
   async function removerPessoa(id: number) {
     await excluirPessoa(id);
 
