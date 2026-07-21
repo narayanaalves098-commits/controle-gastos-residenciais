@@ -140,7 +140,7 @@ ControleGastosResidenciais
 ├── backend
 │   ├── Controllers
 │   ├── Data
-│   ├── DTOs
+│   ├── Dtos
 │   ├── Migrations
 │   ├── Models
 │   └── Program.cs
