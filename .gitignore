@@ -10,3 +10,8 @@
 
 # Ambiente
 .env
+
+# Banco de dados SQLite
+*.db
+*.db-shm
+*.db-wal
