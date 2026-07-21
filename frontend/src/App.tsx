@@ -142,11 +142,17 @@ function App() {
   async function removerPessoa(id: number) {
     await excluirPessoa(id);
 
-    const dados = await listarPessoas();
-    setPessoas(dados);
-    await atualizarResumosPessoas(dados);
-    await atualizarResumoGeral();
-  }
+    // Atualiza a lista de pessoas após a exclusão.
+  const pessoasAtualizadas = await listarPessoas();
+  setPessoas(pessoasAtualizadas);
+
+  // Atualiza a lista porque as transações da pessoa também são excluídas.
+  const transacoesAtualizadas = await listarTransacoes();
+  setTransacoes(transacoesAtualizadas);
+
+  await atualizarResumosPessoas(pessoasAtualizadas);
+  await atualizarResumoGeral();
+}
 
   return (
     <div>
