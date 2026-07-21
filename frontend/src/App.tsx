@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Pessoa } from "./types/Pessoa";
 import type { ResumoGeral } from "./types/ResumoGeral";
 import type { ResumoPessoa } from "./types/ResumoPessoa";
+import { AxiosError } from "axios";
 import {
   listarPessoas,
   cadastrarPessoa,
@@ -90,7 +91,8 @@ function App() {
       alert("Preencha todos os dados da transação.");
       return;
     }
-
+  
+      try {
     await cadastrarTransacao(valor, tipo, data, descricao, pessoaId);
 
     const transacoesAtualizadas = await listarTransacoes();
@@ -107,7 +109,16 @@ function App() {
     setTipo("Despesa");
     setData("");
     setPessoaId(0);
-  }
+
+    alert("Transação cadastrada com sucesso!");
+  } catch (erro) {
+  const error = erro as AxiosError<string>;
+
+  alert(
+    error.response?.data || "Erro ao cadastrar a transação."
+  );
+}
+}
 
   async function removerTransacao(id: number) {
     await excluirTransacao(id);
@@ -247,6 +258,8 @@ function App() {
             </p>
 
             {transacao.descricao && <p>Descrição: {transacao.descricao}</p>}
+
+            <p>Data: {new Date(transacao.data).toLocaleDateString("pt-BR")}</p>
 
             <p>Valor: R$ {transacao.valor}</p>
 
